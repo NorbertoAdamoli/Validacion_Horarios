@@ -6,7 +6,7 @@ from datetime import datetime
 st.set_page_config(page_title="Validador de Horarios", page_icon="⏰", layout="centered")
 
 st.title("⏰ Validador de Horarios Cátedra")
-st.write("Pegá los horarios del sistema para controlar superposiciones y módulos.")
+st.write("Pegue los horarios del sistema para controlar superposiciones y módulos.")
 
 # 1. Cuadro de texto gigante para el celular
 texto_bruto = st.text_area("Pegue aquí los horarios del sistema:", height=200, placeholder="Lunes\n09:55-10:35\n...")
