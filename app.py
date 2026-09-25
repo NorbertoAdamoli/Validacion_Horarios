@@ -42,7 +42,7 @@ if st.button("Procesar y Validar", type="primary"):
                         "Fin": h_fin,
                         "Texto_Horario": linea,
                         "Minutos": minutos,
-                        "Horas Cátedra": round(minutos / 40, 1)
+                        "Horas Cátedra": round(minutos / 40, 1)}
                     )
                 except Exception:
                     pass # Ignora líneas con errores de formato
