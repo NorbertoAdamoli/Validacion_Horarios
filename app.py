@@ -53,14 +53,14 @@ if procesar:
                     dt_fin = datetime.combine(datetime.today(), h_fin)
                     minutos = int((dt_fin - dt_inicio).total_seconds() / 60)
                     
-                    datos.append({
+                     datos.append({
                         "Día": dia_actual,
                         "Inicio": h_inicio,
                         "Fin": h_fin,
                         "Texto_Horario": linea,
-                        "Minutos": minutes = minutos,
-                        "Horas Cátedra": round(minutos / 40, 2)}
-                    )
+                        "Minutos": minutos,
+                        "Horas Cátedra": round(minutos / 40, 2)
+                    })
                 except Exception:
                     pass
 
