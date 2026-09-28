@@ -3,23 +3,23 @@ import pandas as pd
 from datetime import datetime
 import streamlit.components.v1 as components
 
-# Configuración de la interfaz móvil
+# Configuración de la interfaz móvil y escritorio
 st.set_page_config(page_title="Validador de Horarios", page_icon="⏰", layout="centered")
 
 st.title("⏰ Validador de Horarios Cátedra")
-st.write("Copie los horarios del sistema y presione el botón para validar al instante.")
+st.write("Copia los horarios del sistema y presiona el botón para validar al instante.")
 
 # Se inicializa el estado del texto si no existe
 if "texto_entrada" not in st.session_state:
     st.session_state["texto_entrada"] = ""
 
-# Parámetro en la URL para recibir los datos desde JavaScript de forma segura
+# Recibir los datos desde JavaScript de forma segura a través de query params
 query_params = st.query_params
 if "clipboard_data" in query_params:
     st.session_state["texto_entrada"] = query_params["clipboard_data"]
     st.query_params.clear()
 
-# 1. Cuadro de texto gigante para el celular (muestra el contenido actual)
+# 1. Cuadro de texto gigante (muestra el contenido actual)
 texto_bruto = st.text_area(
     "Contenido a validar:", 
     value=st.session_state["texto_entrada"], 
@@ -27,13 +27,13 @@ texto_bruto = st.text_area(
     placeholder="Los horarios pegados aparecerán aquí..."
 )
 
-# 2. Botón optimizado con JavaScript para leer la memoria del celular
+# 2. Botón universal optimizado para Celular y PC con manejo de permisos explícitos
 boton_html = """
 <button id="btn-paste" style="
     background-color: #ff4b4b;
     color: white;
     border: none;
-    padding: 12px 24px;
+    padding: 14px 24px;
     font-size: 16px;
     font-weight: bold;
     border-radius: 8px;
@@ -47,22 +47,35 @@ boton_html = """
 <script>
 document.getElementById('btn-paste').addEventListener('click', async () => {
     try {
+        // Intentar usar la API de portapapeles estándar solicitando foco previo
+        window.focus();
+        
+        // En PC a veces requiere verificar el permiso explícitamente en el navegador
+        if (navigator.permissions && navigator.permissions.query) {
+            try {
+                await navigator.permissions.query({ name: "clipboard-read" });
+            } catch (p_err) {
+                // Algunos navegadores no soportan la consulta pero sí la lectura directa
+            }
+        }
+        
         const text = await navigator.clipboard.readText();
         if (text) {
             const url = new URL(window.parent.location.href);
             url.searchParams.set('clipboard_data', text);
             window.parent.location.href = url.href;
         } else {
-            alert("El portapapeles está vacío o no contiene texto.");
+            alert("El portapapeles está vacío o no contiene texto válido.");
         }
     } catch (err) {
-        alert("Para validar con un toque, por favor permite el acceso al portapapeles cuando el navegador te lo solicite.");
+        alert("Error de seguridad: Para pegar automáticamente en PC/Celular, dale permiso al navegador cuando te aparezca el cartel flotante, o pega el contenido manualmente con Ctrl+V / clic derecho.");
     }
 });
 </script>
 """
 
-components.html(boton_html, height=60)
+# Renderizamos el botón con altura suficiente
+components.html(boton_html, height=65)
 
 # 3. Procesamiento y Validación Automática si hay texto
 if st.session_state["texto_entrada"].strip():
@@ -96,7 +109,7 @@ if st.session_state["texto_entrada"].strip():
                     "Inicio": h_inicio,
                     "Fin": h_fin,
                     "Texto_Horario": linea,
-                    "Minutos": minutos,
+                    "Minutos": minutes,
                     "Horas Cátedra": round(minutos / 40, 2)}
                 )
             except Exception:
@@ -120,7 +133,7 @@ if st.session_state["texto_entrada"].strip():
         total_horas_cat = df['Horas Cátedra'].sum()
         total_modulos = len(df)
         
-        # --- CONTEO DISCRIMINADO DE MÓDULOS ---
+        # --- CONTEO DISCRIMINADO DE MÓDULOS (FIX CORREGIDO) ---
         mod_35 = len(df[df['Minutos'] == 35])
         mod_40 = len(df[df['Minutos'] == 40])
         mod_60 = len(df[df['Minutos'] == 60])
@@ -131,9 +144,7 @@ if st.session_state["texto_entrada"].strip():
         col1.metric("Total Módulos", f"{total_modulos}")
         col2.metric("Total Horas Cátedra", f"{total_horas_cat:.2f} hs")
         
-        # Panel expandible para no saturar la pantalla del celular pero ver el detalle al instante
         with st.expander("🔍 Ver desglose por tipo de módulo", expanded=True):
-            # Usamos columnas pequeñas para diseño móvil amigable
             c1, c2, c3 = st.columns(3)
             c1.markdown(f"**Módulos 35'**\n## {mod_35}")
             c2.markdown(f"**Módulos 40'**\n## {mod_40}")
@@ -162,4 +173,3 @@ if st.session_state["texto_entrada"].strip():
                            f"{info_modulo}")
     else:
         st.warning("No se pudo reconocer ningún formato de día u horario válido.")
-
