@@ -1,85 +1,29 @@
 import streamlit as st
 import pandas as pd
 from datetime import datetime
-import streamlit.components.v1 as components
 
 # Configuración de la interfaz móvil y escritorio
 st.set_page_config(page_title="Validador de Horarios", page_icon="⏰", layout="centered")
 
 st.title("⏰ Validador de Horarios Cátedra")
-st.write("Copia los horarios del sistema y presiona el botón para validar al instante.")
+st.write("Pegue los horarios del sistema para controlar superposiciones y módulos.")
 
-# Se inicializa el estado del texto si no existe
-if "texto_entrada" not in st.session_state:
-    st.session_state["texto_entrada"] = ""
+# Usamos st.form para agrupar la acción y limpiar el estado anterior al procesar
+with st.form(key="validador_form", clear_on_submit=False):
+    
+    # Cuadro de texto gigante nativo (aquí sí funciona Ctrl+V, clics derechos y pegado móvil sin bloqueos)
+    texto_bruto = st.text_area(
+        "Pegue aquí los horarios del sistema:", 
+        height=200, 
+        placeholder="Lunes\n09:55-10:35\nMartes\n08:00-09:20..."
+    )
+    
+    # Botón nativo de envío del formulario
+    procesar = st.form_submit_button("Procesar y Validar Horarios", type="primary")
 
-# Recibir los datos desde JavaScript de forma segura a través de query params
-query_params = st.query_params
-if "clipboard_data" in query_params:
-    st.session_state["texto_entrada"] = query_params["clipboard_data"]
-    st.query_params.clear()
-
-# 1. Cuadro de texto gigante (muestra el contenido actual)
-texto_bruto = st.text_area(
-    "Contenido a validar:", 
-    value=st.session_state["texto_entrada"], 
-    height=200, 
-    placeholder="Los horarios pegados aparecerán aquí..."
-)
-
-# 2. Botón universal optimizado para Celular y PC con manejo de permisos explícitos
-boton_html = """
-<button id="btn-paste" style="
-    background-color: #ff4b4b;
-    color: white;
-    border: none;
-    padding: 14px 24px;
-    font-size: 16px;
-    font-weight: bold;
-    border-radius: 8px;
-    cursor: pointer;
-    width: 100%;
-    box-shadow: 0px 4px 6px rgba(0,0,0,0.1);
-">
-📋 Pegar desde Memoria y Validar
-</button>
-
-<script>
-document.getElementById('btn-paste').addEventListener('click', async () => {
-    try {
-        // Intentar usar la API de portapapeles estándar solicitando foco previo
-        window.focus();
-        
-        // En PC a veces requiere verificar el permiso explícitamente en el navegador
-        if (navigator.permissions && navigator.permissions.query) {
-            try {
-                await navigator.permissions.query({ name: "clipboard-read" });
-            } catch (p_err) {
-                // Algunos navegadores no soportan la consulta pero sí la lectura directa
-            }
-        }
-        
-        const text = await navigator.clipboard.readText();
-        if (text) {
-            const url = new URL(window.parent.location.href);
-            url.searchParams.set('clipboard_data', text);
-            window.parent.location.href = url.href;
-        } else {
-            alert("El portapapeles está vacío o no contiene texto válido.");
-        }
-    } catch (err) {
-        alert("Error de seguridad: Para pegar automáticamente en PC/Celular, dale permiso al navegador cuando te aparezca el cartel flotante, o pega el contenido manualmente con Ctrl+V / clic derecho.");
-    }
-});
-</script>
-"""
-
-# Renderizamos el botón con altura suficiente
-components.html(boton_html, height=65)
-
-# 3. Procesamiento y Validación Automática si hay texto
-if st.session_state["texto_entrada"].strip():
-    lineas = [linea.strip() for linea in st.session_state["texto_entrada"].split('\n') if linea.strip()]
+# Procesamiento y Validación si se presionó el botón y hay texto
+if procesar and texto_bruto.strip():
+    lineas = [linea.strip() for linea in texto_bruto.split('\n') if linea.strip()]
     
     datos = []
     dias_validos = ["Lunes", "Martes", "Miércoles", "Miercoles", "Jueves", "Viernes", "Sábado", "Sabado", "Domingo"]
@@ -109,7 +53,7 @@ if st.session_state["texto_entrada"].strip():
                     "Inicio": h_inicio,
                     "Fin": h_fin,
                     "Texto_Horario": linea,
-                    "Minutos": minutes,
+                    "Minutos": minutos,
                     "Horas Cátedra": round(minutos / 40, 2)}
                 )
             except Exception:
@@ -121,6 +65,7 @@ if st.session_state["texto_entrada"].strip():
         df = df.sort_values(by=['Día_Num', 'Inicio']).reset_index(drop=True)
         df = df.drop(columns=['Día_Num'])
         
+        # Control de Superposiciones (Lógica de intervalos cruzados)
         df['Superposición'] = False
         for i in range(len(df)):
             for j in range(len(df)):
@@ -133,7 +78,7 @@ if st.session_state["texto_entrada"].strip():
         total_horas_cat = df['Horas Cátedra'].sum()
         total_modulos = len(df)
         
-        # --- CONTEO DISCRIMINADO DE MÓDULOS (FIX CORREGIDO) ---
+        # --- CONTEO DISCRIMINADO DE MÓDULOS ---
         mod_35 = len(df[df['Minutos'] == 35])
         mod_40 = len(df[df['Minutos'] == 40])
         mod_60 = len(df[df['Minutos'] == 60])
@@ -172,4 +117,6 @@ if st.session_state["texto_entrada"].strip():
                            f"Horario correcto.\n\n"
                            f"{info_modulo}")
     else:
-        st.warning("No se pudo reconocer ningún formato de día u horario válido.")
+        st.warning("No se pudo reconocer ningún formato de día u horario válido. Verifique el texto pegado.")
+elif procesar:
+    st.info("Por favor, pegue el texto del sistema antes de procesar.")
