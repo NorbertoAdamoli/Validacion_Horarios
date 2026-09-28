@@ -85,7 +85,7 @@ if st.button("Procesar y Validar", type="primary"):
                 if fila['Superposición']:
                     # Tarjeta Roja de Alerta
                     st.error(f"⚠️ **{fila['Día']} — {hora_ini_form} a {hora_fin_form}**\n\n"
-                             f"¡SUPERPOSICIÓN DETECTADA! Este horario se pisa con otro del mismo día.\n\n"
+                             f"¡SUPERPOSICIÓN DETECTADA! Este horario se superpone con otro del mismo día.\n\n"
                              f"Módulos: 1 | Horas Cátedra: {fila['Horas Cátedra']}")
                 else:
                     # Tarjeta Verde Correcta
