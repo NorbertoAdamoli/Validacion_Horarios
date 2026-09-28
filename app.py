@@ -53,7 +53,7 @@ if procesar:
                     dt_fin = datetime.combine(datetime.today(), h_fin)
                     minutos = int((dt_fin - dt_inicio).total_seconds() / 60)
                     
-                     datos.append({
+                    datos.append({
                         "Día": dia_actual,
                         "Inicio": h_inicio,
                         "Fin": h_fin,
@@ -88,7 +88,6 @@ if procesar:
         st.session_state.resultados = "vacio"
 
 # --- RENDERIZADO DE RESULTADOS ---
-# Se muestran aquí abajo de manera persistente aunque el formulario se haya limpiado
 if st.session_state.resultados is not None:
     if isinstance(st.session_state.resultados, pd.DataFrame):
         df = st.session_state.resultados
@@ -139,4 +138,3 @@ if st.session_state.resultados is not None:
         st.warning("No se pudo reconocer ningún formato de día u horario válido. Verifique el texto pegado.")
     elif st.session_state.resultados == "vacio":
         st.info("Por favor, pegue el texto del sistema antes de procesar.")
-
