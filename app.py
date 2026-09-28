@@ -7,7 +7,7 @@ import streamlit.components.v1 as components
 st.set_page_config(page_title="Validador de Horarios", page_icon="⏰", layout="centered")
 
 st.title("⏰ Validador de Horarios Cátedra")
-st.write("Copia los horarios del sistema y presiona el botón para validar al instante.")
+st.write("Copie los horarios del sistema y presione el botón para validar al instante.")
 
 # Se inicializa el estado del texto si no existe
 if "texto_entrada" not in st.session_state:
