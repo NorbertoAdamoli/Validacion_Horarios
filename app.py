@@ -23,7 +23,7 @@ with st.form(key="validador_form", clear_on_submit=True):
     )
     
     # Botón nativo de envío del formulario
-    procesar = st.form_submit_button("Procesar y Validar Horarios", type="primary")
+    procesar = st.form_submit_button("Procesar y Validar Horarios", type="primary", layout="centered")
 
 # Procesamiento y Validación si se presionó el botón y hay texto
 if procesar:
