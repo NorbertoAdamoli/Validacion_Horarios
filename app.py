@@ -3,9 +3,9 @@ import pandas as pd
 from datetime import datetime
 
 # Configuración de la interfaz móvil y escritorio
-st.set_page_config(page_title="Validador de Horas", page_icon="⏰", layout="centered")
+st.set_page_config(page_title="Validador de Horarios", page_icon="⏰", layout="centered")
 
-st.title("⏰ Validador de Horarios Cátedra")
+st.title("⏰ Validador de Horas Cátedra")
 st.write("Pegue los horarios del sistema para controlar superposiciones y módulos.")
 
 # Inicializamos el estado de la sesión para guardar los resultados procesados
