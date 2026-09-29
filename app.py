@@ -3,7 +3,7 @@ import pandas as pd
 from datetime import datetime
 
 # Configuración de la interfaz móvil y escritorio
-st.set_page_config(page_title="Validador de Horarios", page_icon="⏰", layout="centered")
+st.set_page_config(page_title="Validador de Horas", page_icon="⏰", layout="centered")
 
 st.title("⏰ Validador de Horarios Cátedra")
 st.write("Pegue los horarios del sistema para controlar superposiciones y módulos.")
@@ -127,7 +127,7 @@ if st.session_state.resultados is not None:
             
             if fila['Superposición']:
                 st.error(f"⚠️ **{fila['Día']} — {hora_ini_form} a {hora_fin_form}**\n\n"
-                         f"¡SUPERPOSICIÓN DETECTADA! Este horario se pisa con otro bloque.\n\n"
+                         f"¡SUPERPOSICIÓN DETECTADA! Este horario se superpone con otro bloque.\n\n"
                          f"{info_modulo}")
             else:
                 st.success(f"🟢 **{fila['Día']} — {hora_ini_form} a {hora_fin_form}**\n\n"
